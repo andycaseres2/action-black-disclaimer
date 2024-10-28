@@ -137,11 +137,15 @@ const FormTribeca = () => {
 		if (formElement) {
 			const canvas = await html2canvas(formElement)
 			return new Promise((resolve) => {
-				canvas.toBlob((blob) => {
-					const imageURL = URL.createObjectURL(blob) // Crear una URL temporal para la imagen
-					// setFormImageURL(imageURL)
-					resolve(blob)
-				}, 'image/png')
+				canvas.toBlob(
+					(blob) => {
+						const imageURL = URL.createObjectURL(blob) // Crear una URL temporal para la imagen
+						// setFormImageURL(imageURL);
+						resolve(blob)
+					},
+					'image/jpeg', // Cambiar a formato JPG
+					1.0 // Máxima calidad
+				)
 			})
 		}
 	}
