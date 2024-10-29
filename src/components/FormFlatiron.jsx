@@ -134,16 +134,29 @@ const FormFlatiron = () => {
 	const captureFormImage = async () => {
 		const formElement = document.getElementById('form')
 		if (formElement) {
-			const canvas = await html2canvas(formElement)
-			return new Promise((resolve) => {
+			// Ajustar el escalado del contenido para que se vea completo en el canvas
+			const scale = window.devicePixelRatio // Esto ajusta la resolución a la densidad de píxeles del dispositivo
+			const canvas = await html2canvas(formElement, {
+				scale, // Escalar para dispositivos de alta resolución
+				scrollX: -window.scrollX, // Asegura que capture toda la pantalla
+				scrollY: -window.scrollY,
+				width: formElement.scrollWidth, // Tamaño completo del ancho
+				height: formElement.scrollHeight, // Tamaño completo de la altura
+				useCORS: true // Permite capturar contenido de otros orígenes
+			})
+
+			return new Promise((resolve, reject) => {
 				canvas.toBlob(
 					(blob) => {
-						const imageURL = URL.createObjectURL(blob) // Crear una URL temporal para la imagen
-						// setFormImageURL(imageURL);
-						resolve(blob)
+						if (!blob) {
+							reject(new Error('Could not create image blob.'))
+							return
+						}
+						const file = new File([blob], 'captured-image.jpg', { type: 'image/jpeg' })
+						resolve(file)
 					},
-					'image/jpeg', // Cambiar a formato JPG
-					1.0 // Máxima calidad
+					'image/jpeg',
+					1.0
 				)
 			})
 		}
@@ -186,8 +199,8 @@ const FormFlatiron = () => {
 	}
 
 	return (
-		<div className="flex w-full flex-col items-start justify-center py-6">
-			<div id="form" className="flex w-full flex-col items-start justify-center py-4">
+		<div id="form" className="flex w-full flex-col items-start justify-center py-6">
+			<div className="flex w-full flex-col items-start justify-center py-4">
 				<div className="flex items-center px-4">
 					<img src="/logo_usa.png" alt="logo_usa" />
 				</div>
