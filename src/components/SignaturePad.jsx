@@ -4,99 +4,79 @@ import Trash from '../Icons/Trash'
 const SignaturePad = ({ setSignature, reset, setReset }) => {
 	const canvasRef = useRef(null)
 	const [isDrawing, setIsDrawing] = useState(false)
-	const [lastX, setLastX] = useState(0)
-	const [lastY, setLastY] = useState(0)
+	const [context, setContext] = useState(null)
 
 	useEffect(() => {
 		const canvas = canvasRef.current
-		const context = canvas.getContext('2d')
-		context.strokeStyle = 'black' // Color de la firma
-		context.lineWidth = 1.5 // Grosor de la línea para mayor precisión
-		context.lineJoin = 'round' // Suavizar las uniones de las líneas
-		context.lineCap = 'round' // Suavizar el final de las líneas
-		context.fillStyle = 'white' // Color de fondo
-		context.fillRect(0, 0, canvas.width, canvas.height) // Fondo blanco
+		const ctx = canvas.getContext('2d')
+		ctx.strokeStyle = 'black'
+		ctx.lineWidth = 2
+		ctx.lineJoin = 'round'
+		ctx.lineCap = 'round'
+		ctx.fillStyle = 'white'
+		ctx.fillRect(0, 0, canvas.width, canvas.height)
+		setContext(ctx)
 
-		// Prevenir el desplazamiento del canvas
-		canvas.style.touchAction = 'none' // Evitar el scroll en dispositivos táctiles
+		canvas.style.touchAction = 'none' // Evita el desplazamiento en dispositivos táctiles
 	}, [])
 
 	const getCanvasPosition = (e) => {
 		const canvas = canvasRef.current
 		const rect = canvas.getBoundingClientRect()
 		return {
-			x: (e.touches ? e.touches[0].clientX : e.clientX) - rect.left,
-			y: (e.touches ? e.touches[0].clientY : e.clientY) - rect.top
+			x: (e.clientX || e.touches[0].clientX) - rect.left,
+			y: (e.clientY || e.touches[0].clientY) - rect.top
 		}
 	}
 
 	const startDrawing = (e) => {
+		e.preventDefault()
 		setIsDrawing(true)
 		const { x, y } = getCanvasPosition(e)
-		setLastX(x)
-		setLastY(y)
+		context.beginPath()
+		context.moveTo(x, y)
 	}
 
 	const draw = (e) => {
 		if (!isDrawing) return
+		e.preventDefault()
 		const { x, y } = getCanvasPosition(e)
-
-		const canvas = canvasRef.current
-		const context = canvas.getContext('2d')
-
-		context.beginPath()
-		context.moveTo(lastX, lastY)
 		context.lineTo(x, y)
 		context.stroke()
-
-		setLastX(x)
-		setLastY(y)
-
-		// Prevenir el comportamiento de desplazamiento predeterminado en pantallas táctiles
-		if (e.touches) {
-			e.preventDefault()
-		}
 	}
 
 	const stopDrawing = () => {
+		if (!isDrawing) return
 		setIsDrawing(false)
-		const canvas = canvasRef.current
-
-		// Convertir el canvas en una imagen literal (Blob)
-		canvas.toBlob((blob) => {
-			if (setSignature) {
-				setSignature(blob) // Enviar la imagen literal (Blob) a onSave
-			}
-		}, 'image/png')
+		if (setSignature) {
+			canvasRef.current.toBlob((blob) => setSignature(blob), 'image/png')
+		}
 	}
 
 	const clearSignature = () => {
-		const canvas = canvasRef.current
-		const context = canvas.getContext('2d')
-		context.clearRect(0, 0, canvas.width, canvas.height) // Limpia el canvas
-		context.fillStyle = 'white' // Restaura el fondo
-		context.fillRect(0, 0, canvas.width, canvas.height)
+		context.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height)
+		context.fillStyle = 'white'
+		context.fillRect(0, 0, canvasRef.current.width, canvasRef.current.height)
 	}
 
 	useEffect(() => {
-		if (reset) clearSignature()
-		setTimeout(() => setReset(false), 2000)
-	}, [reset])
+		if (reset) {
+			clearSignature()
+			setReset(false)
+		}
+	}, [reset, setReset])
 
 	return (
 		<div>
 			<canvas
 				ref={canvasRef}
 				width={500}
-				height={300} // Aumentar el tamaño del área de firma
+				height={300}
 				className="rounded-lg border border-gray-300"
-				onMouseDown={startDrawing}
-				onMouseMove={draw}
-				onMouseUp={stopDrawing}
-				onMouseLeave={stopDrawing}
-				onTouchStart={startDrawing}
-				onTouchMove={draw}
-				onTouchEnd={stopDrawing}
+				onPointerDown={startDrawing}
+				onPointerMove={draw}
+				onPointerUp={stopDrawing}
+				onPointerLeave={stopDrawing}
 			/>
 			<div className="mt-4 flex w-full justify-end space-x-2">
 				<button onClick={clearSignature} className="rounded bg-red-500 p-2 text-white">
