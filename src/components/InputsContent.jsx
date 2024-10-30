@@ -1,5 +1,3 @@
-import React from 'react'
-
 const InputsContent = ({ formData, handleChange }) => {
 	return (
 		<div className="flex w-full flex-col gap-2 py-2">

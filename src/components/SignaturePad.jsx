@@ -21,15 +21,9 @@ const SignaturePad = ({ setSignature }) => {
 		canvas.style.touchAction = 'none'
 	}, [])
 
-	const getCursorPosition = (e) => {
-		const canvas = canvasRef.current
-		const rect = canvas.getBoundingClientRect()
-		const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left
-		const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top
-		return { x, y }
-	}
-
 	const startDrawing = (e) => {
+		e.preventDefault()
+		document.activeElement.blur()
 		clearTimeout(inactivityTimeout.current) // Limpiar cualquier temporizador previo
 		setIsDrawing(true)
 		ctx.beginPath()
@@ -37,6 +31,7 @@ const SignaturePad = ({ setSignature }) => {
 	}
 
 	const draw = (e) => {
+		e.preventDefault()
 		if (!isDrawing) return
 
 		const canvas = canvasRef.current
@@ -51,7 +46,8 @@ const SignaturePad = ({ setSignature }) => {
 		setLastY(y)
 	}
 
-	const stopDrawing = () => {
+	const stopDrawing = (e) => {
+		e.preventDefault()
 		const ctx = ctxRef.current
 		ctx.closePath()
 		setIsDrawing(false)
