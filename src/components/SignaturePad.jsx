@@ -30,6 +30,7 @@ const SignaturePad = ({ setSignature, reset, setReset }) => {
 	}
 
 	const startDrawing = (e) => {
+		e.preventDefault()
 		setIsDrawing(true)
 		const { x, y } = getCanvasPosition(e)
 		context.beginPath()
@@ -38,6 +39,7 @@ const SignaturePad = ({ setSignature, reset, setReset }) => {
 
 	const draw = (e) => {
 		if (!isDrawing) return
+		e.preventDefault()
 		const { x, y } = getCanvasPosition(e)
 		context.lineTo(x, y)
 		context.stroke()
@@ -52,9 +54,11 @@ const SignaturePad = ({ setSignature, reset, setReset }) => {
 	}
 
 	const clearSignature = () => {
-		context.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height)
-		context.fillStyle = 'white'
-		context.fillRect(0, 0, canvasRef.current.width, canvasRef.current.height)
+		if (context) {
+			context.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height)
+			context.fillStyle = 'white'
+			context.fillRect(0, 0, canvasRef.current.width, canvasRef.current.height)
+		}
 	}
 
 	useEffect(() => {
@@ -71,13 +75,13 @@ const SignaturePad = ({ setSignature, reset, setReset }) => {
 				width={500}
 				height={300}
 				className="rounded-lg border border-gray-300"
-				onPointerDown={startDrawing}
-				onPointerMove={draw}
-				onPointerUp={stopDrawing}
-				onPointerLeave={stopDrawing}
-				onTouchStart={startDrawing} // Add touch event for mobile
-				onTouchMove={draw} // Add touch event for mobile
-				onTouchEnd={stopDrawing} // Add touch event for mobile
+				onMouseDown={startDrawing} // Use mouse events for desktop
+				onMouseMove={draw}
+				onMouseUp={stopDrawing}
+				onMouseLeave={stopDrawing}
+				onTouchStart={startDrawing} // Touch events for mobile
+				onTouchMove={draw}
+				onTouchEnd={stopDrawing}
 			/>
 			<div className="mt-4 flex w-full justify-end space-x-2">
 				<button onClick={clearSignature} className="rounded bg-red-500 p-2 text-white">
