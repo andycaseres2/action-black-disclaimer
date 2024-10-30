@@ -30,7 +30,6 @@ const SignaturePad = ({ setSignature, reset, setReset }) => {
 	}
 
 	const startDrawing = (e) => {
-		e.preventDefault()
 		setIsDrawing(true)
 		const { x, y } = getCanvasPosition(e)
 		context.beginPath()
@@ -39,7 +38,6 @@ const SignaturePad = ({ setSignature, reset, setReset }) => {
 
 	const draw = (e) => {
 		if (!isDrawing) return
-		e.preventDefault()
 		const { x, y } = getCanvasPosition(e)
 		context.lineTo(x, y)
 		context.stroke()
