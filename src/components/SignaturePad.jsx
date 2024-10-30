@@ -1,25 +1,24 @@
 import React, { useRef, useState, useEffect } from 'react'
 import Trash from '../Icons/Trash'
 
-const SignaturePad = () => {
+const SignaturePad = ({ setSignature }) => {
 	const canvasRef = useRef(null)
 	const [isDrawing, setIsDrawing] = useState(false)
-	const ctxRef = useRef(null)
+	const [lastX, setLastX] = useState(0)
+	const [lastY, setLastY] = useState(0)
+	let inactivityTimeout = useRef(null)
 
 	useEffect(() => {
 		const canvas = canvasRef.current
-		const ctx = canvas.getContext('2d')
+		const context = canvas.getContext('2d')
+		context.strokeStyle = 'black'
+		context.lineWidth = 1.5
+		context.lineJoin = 'round'
+		context.lineCap = 'round'
+		context.fillStyle = 'white'
+		context.fillRect(0, 0, canvas.width, canvas.height)
 
-		// Ajusta la resolución del canvas
-		const scale = window.devicePixelRatio
-		canvas.width = 400 * scale // Ajusta el ancho según la escala
-		canvas.height = 300 * scale // Ajusta la altura según la escala
-		ctx.scale(scale, scale) // Escalar el contexto
-
-		ctxRef.current = ctx
-		ctx.lineWidth = 2 // Grosor de la línea
-		ctx.strokeStyle = '#000' // Color de la línea
-		ctx.lineCap = 'round' // Estilo de la punta de la línea
+		canvas.style.touchAction = 'none'
 	}, [])
 
 	const getCursorPosition = (e) => {
@@ -31,8 +30,7 @@ const SignaturePad = () => {
 	}
 
 	const startDrawing = (e) => {
-		const ctx = ctxRef.current
-		const { x, y } = getCursorPosition(e)
+		clearTimeout(inactivityTimeout.current) // Limpiar cualquier temporizador previo
 		setIsDrawing(true)
 		ctx.beginPath()
 		ctx.moveTo(x, y)
@@ -41,42 +39,57 @@ const SignaturePad = () => {
 	const draw = (e) => {
 		if (!isDrawing) return
 
-		const ctx = ctxRef.current
-		const { x, y } = getCursorPosition(e)
-		ctx.lineTo(x, y)
-		ctx.stroke()
+		const canvas = canvasRef.current
+		const context = canvas.getContext('2d')
+
+		context.beginPath()
+		context.moveTo(lastX, lastY)
+		context.lineTo(x, y)
+		context.stroke()
+
+		setLastX(x)
+		setLastY(y)
 	}
 
 	const stopDrawing = () => {
 		const ctx = ctxRef.current
 		ctx.closePath()
 		setIsDrawing(false)
+
+		// Iniciar temporizador de inactividad para guardar la firma después de 2 segundos
+		inactivityTimeout.current = setTimeout(() => {
+			const canvas = canvasRef.current
+			canvas.toBlob((blob) => {
+				if (blob && setSignature) {
+					setSignature(blob)
+				}
+			}, 'image/png')
+		}, 2000) // Espera 2 segundos para confirmar que el usuario ha dejado de firmar
 	}
 
 	const clearCanvas = () => {
 		const canvas = canvasRef.current
-		const ctx = ctxRef.current
-		ctx.clearRect(0, 0, canvas.width, canvas.height)
+		const context = canvas.getContext('2d')
+		context.clearRect(0, 0, canvas.width, canvas.height)
+		context.fillStyle = 'white'
+		context.fillRect(0, 0, canvas.width, canvas.height)
+		clearTimeout(inactivityTimeout.current) // Limpiar el temporizador al limpiar el canvas
 	}
 
 	return (
 		<div style={{ textAlign: 'center' }}>
 			<canvas
 				ref={canvasRef}
-				style={{
-					border: '1px solid #000',
-					touchAction: 'none',
-					borderRadius: '5px',
-					width: '400px', // Tamaño visible
-					height: '300px' // Tamaño visible
-				}}
-				onTouchStart={startDrawing}
-				onTouchMove={draw}
-				onTouchEnd={stopDrawing}
+				width={500}
+				height={300}
+				className="rounded-lg border border-gray-300"
 				onMouseDown={startDrawing}
 				onMouseMove={draw}
 				onMouseUp={stopDrawing}
-				onMouseOut={stopDrawing}
+				onMouseLeave={stopDrawing}
+				onTouchStart={startDrawing}
+				onTouchMove={draw}
+				onTouchEnd={stopDrawing}
 			/>
 			<br />
 			<div className="flex w-full justify-end">
