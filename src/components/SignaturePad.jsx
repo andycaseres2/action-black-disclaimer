@@ -11,14 +11,14 @@ const SignaturePad = () => {
 		const ctx = canvas.getContext('2d')
 
 		// Ajusta la resolución del canvas
-		const scale = window.devicePixelRatio // Escala del dispositivo
-		canvas.width = 400 * scale // Ajusta el ancho según la escala
+		const scale = window.devicePixelRatio || 1 // Escala del dispositivo
+		canvas.width = 500 * scale // Ajusta el ancho según la escala
 		canvas.height = 300 * scale // Ajusta la altura según la escala
 		ctx.scale(scale, scale) // Escalar el contexto
 
 		ctxRef.current = ctx
 		ctx.lineWidth = 2 // Grosor de la línea
-		ctx.strokeStyle = '#000' // Color de la línea
+		ctx.strokeStyle = '#000' // Color negro para la línea
 		ctx.lineCap = 'round' // Estilo de la punta de la línea
 	}, [])
 
@@ -70,7 +70,7 @@ const SignaturePad = () => {
 					border: '1px solid #000',
 					touchAction: 'none',
 					borderRadius: '5px',
-					width: '400px', // Tamaño visible
+					width: '500px', // Tamaño visible
 					height: '300px' // Tamaño visible
 				}}
 				onTouchStart={startDrawing}
