@@ -18,21 +18,31 @@ const SignaturePad = ({ setSignature }) => {
 		context.fillStyle = 'white'
 		context.fillRect(0, 0, canvas.width, canvas.height)
 
-		canvas.style.touchAction = 'none'
+		canvas.style.touchAction = 'none' // Evita el desplazamiento en dispositivos táctiles
 	}, [])
+
+	const getCanvasPosition = (e) => {
+		const canvas = canvasRef.current
+		const rect = canvas.getBoundingClientRect()
+		return {
+			x: e.clientX - rect.left,
+			y: e.clientY - rect.top
+		}
+	}
 
 	const startDrawing = (e) => {
 		e.preventDefault()
-		document.activeElement.blur()
-		clearTimeout(inactivityTimeout.current) // Limpiar cualquier temporizador previo
+		document.activeElement.blur() // Desenfoca cualquier input activo
 		setIsDrawing(true)
-		ctx.beginPath()
-		ctx.moveTo(x, y)
+		const { x, y } = getCanvasPosition(e)
+		setLastX(x)
+		setLastY(y)
 	}
 
 	const draw = (e) => {
 		e.preventDefault()
 		if (!isDrawing) return
+		const { x, y } = getCanvasPosition(e)
 
 		const canvas = canvasRef.current
 		const context = canvas.getContext('2d')
@@ -48,11 +58,9 @@ const SignaturePad = ({ setSignature }) => {
 
 	const stopDrawing = (e) => {
 		e.preventDefault()
-		const ctx = ctxRef.current
-		ctx.closePath()
 		setIsDrawing(false)
 
-		// Iniciar temporizador de inactividad para guardar la firma después de 2 segundos
+		// Inicia temporizador para guardar la firma después de 2 segundos de inactividad
 		inactivityTimeout.current = setTimeout(() => {
 			const canvas = canvasRef.current
 			canvas.toBlob((blob) => {
@@ -63,34 +71,30 @@ const SignaturePad = ({ setSignature }) => {
 		}, 2000) // Espera 2 segundos para confirmar que el usuario ha dejado de firmar
 	}
 
-	const clearCanvas = () => {
+	const clearSignature = () => {
 		const canvas = canvasRef.current
 		const context = canvas.getContext('2d')
 		context.clearRect(0, 0, canvas.width, canvas.height)
 		context.fillStyle = 'white'
 		context.fillRect(0, 0, canvas.width, canvas.height)
-		clearTimeout(inactivityTimeout.current) // Limpiar el temporizador al limpiar el canvas
+		clearTimeout(inactivityTimeout.current)
 	}
 
 	return (
-		<div style={{ textAlign: 'center' }}>
+		<div>
 			<canvas
 				ref={canvasRef}
 				width={500}
 				height={300}
 				className="rounded-lg border border-gray-300"
-				onMouseDown={startDrawing}
-				onMouseMove={draw}
-				onMouseUp={stopDrawing}
-				onMouseLeave={stopDrawing}
-				onTouchStart={startDrawing}
-				onTouchMove={draw}
-				onTouchEnd={stopDrawing}
+				onPointerDown={startDrawing}
+				onPointerMove={draw}
+				onPointerUp={stopDrawing}
+				onPointerLeave={stopDrawing}
 			/>
-			<br />
-			<div className="flex w-full justify-end">
-				<button className="rounded-md bg-red-500 p-2 hover:scale-105" onClick={clearCanvas}>
-					<Trash color={'white'} />
+			<div className="mt-4 flex w-full justify-end space-x-2">
+				<button onClick={clearSignature} className="rounded bg-red-500 p-2 text-white">
+					<Trash />
 				</button>
 			</div>
 		</div>
