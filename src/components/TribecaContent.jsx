@@ -61,13 +61,9 @@ const TribecaContent = () => {
 			<div className="mb-4">
 				<p className="text-gray-700">
 					<strong>Rules and Regulations:</strong> I accept the general regulations of Action Black
-					services.
-					<a href="https://example.com" className="text-indigo-600 underline">
-						See regulations
-					</a>
-					. I agree to abide by all rules, regulations, and policies of the provider, including
-					proper use of equipment, following safety guidelines, and respecting other members and
-					staff.
+					services. See regulations . I agree to abide by all rules, regulations, and policies of
+					the provider, including proper use of equipment, following safety guidelines, and
+					respecting other members and staff.
 				</p>
 			</div>
 
