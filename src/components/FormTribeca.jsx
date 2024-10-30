@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
 import SignaturePad from './SignaturePad'
-import Document from './Document'
 import html2canvas from 'html2canvas' // Importar html2canvas
 import LoadingModal from './LoadingModal'
 

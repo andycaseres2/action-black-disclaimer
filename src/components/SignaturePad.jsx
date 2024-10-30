@@ -81,9 +81,10 @@ const SignaturePad = ({ setSignature, reset, setReset }) => {
 				onMouseMove={draw}
 				onMouseUp={stopDrawing}
 				onMouseLeave={stopDrawing}
-				onTouchStart={startDrawing} // Simplificación
-				onTouchMove={draw} // Simplificación
-				onTouchEnd={stopDrawing} // Simplificación
+				onTouchStart={startDrawing} // Para dispositivos táctiles
+				onTouchMove={draw} // Para dispositivos táctiles
+				onTouchEnd={stopDrawing} // Para dispositivos táctiles
+				onTouchCancel={stopDrawing} // Manejo adicional para evitar problemas
 			/>
 			<div className="mt-4 flex w-full justify-end space-x-2">
 				<button onClick={clearSignature} className="rounded bg-red-500 p-2 text-white">
