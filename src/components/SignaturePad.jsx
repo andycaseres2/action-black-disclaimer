@@ -17,16 +17,17 @@ const SignaturePad = ({ setSignature, reset, setReset }) => {
 		ctx.fillRect(0, 0, canvas.width, canvas.height)
 		setContext(ctx)
 
-		canvas.style.touchAction = 'none' // Prevents scrolling on touch devices
+		// Configuración para prevenir el desplazamiento en dispositivos táctiles
+		canvas.style.touchAction = 'none'
 	}, [])
 
 	const getCanvasPosition = (e) => {
 		const canvas = canvasRef.current
 		const rect = canvas.getBoundingClientRect()
-		return {
-			x: (e.clientX || (e.touches ? e.touches[0].clientX : 0)) - rect.left,
-			y: (e.clientY || (e.touches ? e.touches[0].clientY : 0)) - rect.top
-		}
+		const x = (e.clientX || (e.touches ? e.touches[0].clientX : 0)) - rect.left
+		const y = (e.clientY || (e.touches ? e.touches[0].clientY : 0)) - rect.top
+
+		return { x, y }
 	}
 
 	const startDrawing = (e) => {
@@ -75,13 +76,14 @@ const SignaturePad = ({ setSignature, reset, setReset }) => {
 				width={500}
 				height={300}
 				className="rounded-lg border border-gray-300"
-				onMouseDown={startDrawing} // Use mouse events for desktop
+				tabIndex={0} // Permite que el canvas reciba el enfoque
+				onMouseDown={startDrawing}
 				onMouseMove={draw}
 				onMouseUp={stopDrawing}
 				onMouseLeave={stopDrawing}
-				onTouchStart={startDrawing} // Touch events for mobile
-				onTouchMove={draw}
-				onTouchEnd={stopDrawing}
+				onTouchStart={startDrawing} // Simplificación
+				onTouchMove={draw} // Simplificación
+				onTouchEnd={stopDrawing} // Simplificación
 			/>
 			<div className="mt-4 flex w-full justify-end space-x-2">
 				<button onClick={clearSignature} className="rounded bg-red-500 p-2 text-white">
