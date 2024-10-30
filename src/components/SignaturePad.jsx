@@ -1,93 +1,89 @@
 import React, { useRef, useState, useEffect } from 'react'
 import Trash from '../Icons/Trash'
 
-const SignaturePad = ({ setSignature, reset, setReset }) => {
+const SignaturePad = () => {
 	const canvasRef = useRef(null)
 	const [isDrawing, setIsDrawing] = useState(false)
-	const [context, setContext] = useState(null)
+	const ctxRef = useRef(null)
 
 	useEffect(() => {
 		const canvas = canvasRef.current
 		const ctx = canvas.getContext('2d')
-		ctx.strokeStyle = 'black'
-		ctx.lineWidth = 2
-		ctx.lineJoin = 'round'
-		ctx.lineCap = 'round'
-		ctx.fillStyle = 'white'
-		ctx.fillRect(0, 0, canvas.width, canvas.height)
-		setContext(ctx)
 
-		// Configuración para prevenir el desplazamiento en dispositivos táctiles
-		canvas.style.touchAction = 'none'
+		// Ajusta la resolución del canvas
+		const scale = window.devicePixelRatio // Escala del dispositivo
+		canvas.width = 400 * scale // Ajusta el ancho según la escala
+		canvas.height = 300 * scale // Ajusta la altura según la escala
+		ctx.scale(scale, scale) // Escalar el contexto
+
+		ctxRef.current = ctx
+		ctx.lineWidth = 2 // Grosor de la línea
+		ctx.strokeStyle = '#000' // Color de la línea
+		ctx.lineCap = 'round' // Estilo de la punta de la línea
 	}, [])
 
-	const getCanvasPosition = (e) => {
-		const canvas = canvasRef.current
-		const rect = canvas.getBoundingClientRect()
-		const x = (e.clientX || (e.touches ? e.touches[0].clientX : 0)) - rect.left
-		const y = (e.clientY || (e.touches ? e.touches[0].clientY : 0)) - rect.top
-
-		return { x, y }
-	}
-
 	const startDrawing = (e) => {
-		e.preventDefault()
+		const canvas = canvasRef.current
+		const ctx = ctxRef.current
+
 		setIsDrawing(true)
-		const { x, y } = getCanvasPosition(e)
-		context.beginPath()
-		context.moveTo(x, y)
+		ctx.beginPath()
+
+		const rect = canvas.getBoundingClientRect()
+		const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left
+		const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top
+
+		ctx.moveTo(x, y)
 	}
 
 	const draw = (e) => {
 		if (!isDrawing) return
-		e.preventDefault()
-		const { x, y } = getCanvasPosition(e)
-		context.lineTo(x, y)
-		context.stroke()
+
+		const canvas = canvasRef.current
+		const ctx = ctxRef.current
+
+		const rect = canvas.getBoundingClientRect()
+		const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left
+		const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top
+
+		ctx.lineTo(x, y)
+		ctx.stroke()
 	}
 
 	const stopDrawing = () => {
-		if (!isDrawing) return
+		const ctx = ctxRef.current
+		ctx.closePath()
 		setIsDrawing(false)
-		if (setSignature) {
-			canvasRef.current.toBlob((blob) => setSignature(blob), 'image/png')
-		}
 	}
 
-	const clearSignature = () => {
-		if (context) {
-			context.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height)
-			context.fillStyle = 'white'
-			context.fillRect(0, 0, canvasRef.current.width, canvasRef.current.height)
-		}
+	const clearCanvas = () => {
+		const canvas = canvasRef.current
+		const ctx = ctxRef.current
+		ctx.clearRect(0, 0, canvas.width, canvas.height)
 	}
-
-	useEffect(() => {
-		if (reset) {
-			clearSignature()
-			setReset(false)
-		}
-	}, [reset, setReset])
 
 	return (
-		<div>
+		<div style={{ textAlign: 'center' }}>
 			<canvas
 				ref={canvasRef}
-				width={500}
-				height={300}
-				className="rounded-lg border border-gray-300"
-				tabIndex={0} // Permite que el canvas reciba el enfoque
+				style={{
+					border: '1px solid #000',
+					touchAction: 'none',
+					borderRadius: '5px',
+					width: '400px', // Tamaño visible
+					height: '300px' // Tamaño visible
+				}}
+				onTouchStart={startDrawing}
+				onTouchMove={draw}
+				onTouchEnd={stopDrawing}
 				onMouseDown={startDrawing}
 				onMouseMove={draw}
 				onMouseUp={stopDrawing}
-				onMouseLeave={stopDrawing}
-				onTouchStart={startDrawing} // Para dispositivos táctiles
-				onTouchMove={draw} // Para dispositivos táctiles
-				onTouchEnd={stopDrawing} // Para dispositivos táctiles
-				onTouchCancel={stopDrawing} // Manejo adicional para evitar problemas
+				onMouseOut={stopDrawing}
 			/>
-			<div className="mt-4 flex w-full justify-end space-x-2">
-				<button onClick={clearSignature} className="rounded bg-red-500 p-2 text-white">
+			<br />
+			<div className="flex w-full justify-end">
+				<button onClick={clearCanvas}>
 					<Trash />
 				</button>
 			</div>
