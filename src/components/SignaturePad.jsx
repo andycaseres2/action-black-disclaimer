@@ -11,41 +11,38 @@ const SignaturePad = () => {
 		const ctx = canvas.getContext('2d')
 
 		// Ajusta la resolución del canvas
-		const scale = window.devicePixelRatio || 1 // Escala del dispositivo
-		canvas.width = 500 * scale // Ajusta el ancho según la escala
+		const scale = window.devicePixelRatio
+		canvas.width = 400 * scale // Ajusta el ancho según la escala
 		canvas.height = 300 * scale // Ajusta la altura según la escala
 		ctx.scale(scale, scale) // Escalar el contexto
 
 		ctxRef.current = ctx
 		ctx.lineWidth = 2 // Grosor de la línea
-		ctx.strokeStyle = '#000' // Color negro para la línea
+		ctx.strokeStyle = '#000' // Color de la línea
 		ctx.lineCap = 'round' // Estilo de la punta de la línea
 	}, [])
 
-	const startDrawing = (e) => {
+	const getCursorPosition = (e) => {
 		const canvas = canvasRef.current
-		const ctx = ctxRef.current
-
-		setIsDrawing(true)
-		ctx.beginPath()
-
 		const rect = canvas.getBoundingClientRect()
 		const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left
 		const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top
+		return { x, y }
+	}
 
+	const startDrawing = (e) => {
+		const ctx = ctxRef.current
+		const { x, y } = getCursorPosition(e)
+		setIsDrawing(true)
+		ctx.beginPath()
 		ctx.moveTo(x, y)
 	}
 
 	const draw = (e) => {
 		if (!isDrawing) return
 
-		const canvas = canvasRef.current
 		const ctx = ctxRef.current
-
-		const rect = canvas.getBoundingClientRect()
-		const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left
-		const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top
-
+		const { x, y } = getCursorPosition(e)
 		ctx.lineTo(x, y)
 		ctx.stroke()
 	}
@@ -70,7 +67,7 @@ const SignaturePad = () => {
 					border: '1px solid #000',
 					touchAction: 'none',
 					borderRadius: '5px',
-					width: '500px', // Tamaño visible
+					width: '400px', // Tamaño visible
 					height: '300px' // Tamaño visible
 				}}
 				onTouchStart={startDrawing}
@@ -83,8 +80,8 @@ const SignaturePad = () => {
 			/>
 			<br />
 			<div className="flex w-full justify-end">
-				<button onClick={clearCanvas}>
-					<Trash />
+				<button className="rounded-md bg-red-500 p-2 hover:scale-105" onClick={clearCanvas}>
+					<Trash color={'white'} />
 				</button>
 			</div>
 		</div>
