@@ -17,15 +17,15 @@ const SignaturePad = ({ setSignature, reset, setReset }) => {
 		ctx.fillRect(0, 0, canvas.width, canvas.height)
 		setContext(ctx)
 
-		canvas.style.touchAction = 'none' // Evita el desplazamiento en dispositivos táctiles
+		canvas.style.touchAction = 'none' // Prevents scrolling on touch devices
 	}, [])
 
 	const getCanvasPosition = (e) => {
 		const canvas = canvasRef.current
 		const rect = canvas.getBoundingClientRect()
 		return {
-			x: (e.clientX || e.touches[0].clientX) - rect.left,
-			y: (e.clientY || e.touches[0].clientY) - rect.top
+			x: (e.clientX || (e.touches ? e.touches[0].clientX : 0)) - rect.left,
+			y: (e.clientY || (e.touches ? e.touches[0].clientY : 0)) - rect.top
 		}
 	}
 
@@ -77,6 +77,9 @@ const SignaturePad = ({ setSignature, reset, setReset }) => {
 				onPointerMove={draw}
 				onPointerUp={stopDrawing}
 				onPointerLeave={stopDrawing}
+				onTouchStart={startDrawing} // Add touch event for mobile
+				onTouchMove={draw} // Add touch event for mobile
+				onTouchEnd={stopDrawing} // Add touch event for mobile
 			/>
 			<div className="mt-4 flex w-full justify-end space-x-2">
 				<button onClick={clearSignature} className="rounded bg-red-500 p-2 text-white">
