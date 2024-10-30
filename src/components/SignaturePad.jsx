@@ -18,7 +18,18 @@ const SignaturePad = ({ setSignature }) => {
 		context.fillStyle = 'white'
 		context.fillRect(0, 0, canvas.width, canvas.height)
 
-		canvas.style.touchAction = 'none' // Evita el desplazamiento en dispositivos táctiles
+		canvas.style.touchAction = 'none'
+
+		// Restablece eventos al hacer clic en el canvas después de interactuar con inputs
+		canvas.addEventListener('pointerdown', () => {
+			canvas.setPointerCapture(canvas)
+		})
+
+		return () => {
+			canvas.removeEventListener('pointerdown', () => {
+				canvas.setPointerCapture(canvas)
+			})
+		}
 	}, [])
 
 	const getCanvasPosition = (e) => {
@@ -44,9 +55,7 @@ const SignaturePad = ({ setSignature }) => {
 		if (!isDrawing) return
 		const { x, y } = getCanvasPosition(e)
 
-		const canvas = canvasRef.current
-		const context = canvas.getContext('2d')
-
+		const context = canvasRef.current.getContext('2d')
 		context.beginPath()
 		context.moveTo(lastX, lastY)
 		context.lineTo(x, y)
