@@ -1,24 +1,24 @@
 import React, { useRef, useState, useEffect } from 'react'
 import Trash from '../Icons/Trash'
 
-const SignaturePad = ({ setSignature, reset, setReset }) => {
+const SignaturePad = ({ setSignature }) => {
 	const canvasRef = useRef(null)
 	const [isDrawing, setIsDrawing] = useState(false)
 	const [lastX, setLastX] = useState(0)
 	const [lastY, setLastY] = useState(0)
+	let inactivityTimeout = useRef(null)
 
 	useEffect(() => {
 		const canvas = canvasRef.current
 		const context = canvas.getContext('2d')
-		context.strokeStyle = 'black' // Color de la firma
-		context.lineWidth = 1.5 // Grosor de la línea para mayor precisión
-		context.lineJoin = 'round' // Suavizar las uniones de las líneas
-		context.lineCap = 'round' // Suavizar el final de las líneas
-		context.fillStyle = 'white' // Color de fondo
-		context.fillRect(0, 0, canvas.width, canvas.height) // Fondo blanco
+		context.strokeStyle = 'black'
+		context.lineWidth = 1.5
+		context.lineJoin = 'round'
+		context.lineCap = 'round'
+		context.fillStyle = 'white'
+		context.fillRect(0, 0, canvas.width, canvas.height)
 
-		// Prevenir el desplazamiento del canvas
-		canvas.style.touchAction = 'none' // Evitar el scroll en dispositivos táctiles
+		canvas.style.touchAction = 'none'
 	}, [])
 
 	const getCanvasPosition = (e) => {
@@ -31,6 +31,7 @@ const SignaturePad = ({ setSignature, reset, setReset }) => {
 	}
 
 	const startDrawing = (e) => {
+		clearTimeout(inactivityTimeout.current) // Limpiar cualquier temporizador previo
 		setIsDrawing(true)
 		const { x, y } = getCanvasPosition(e)
 		setLastX(x)
@@ -51,44 +52,37 @@ const SignaturePad = ({ setSignature, reset, setReset }) => {
 
 		setLastX(x)
 		setLastY(y)
-
-		// Prevenir el comportamiento de desplazamiento predeterminado en pantallas táctiles
-		if (e.touches) {
-			e.preventDefault()
-		}
 	}
 
 	const stopDrawing = () => {
 		setIsDrawing(false)
-		const canvas = canvasRef.current
 
-		// Convertir el canvas en una imagen literal (Blob)
-		canvas.toBlob((blob) => {
-			if (setSignature) {
-				setSignature(blob) // Enviar la imagen literal (Blob) a onSave
-			}
-		}, 'image/png')
+		// Iniciar temporizador de inactividad para guardar la firma después de 2 segundos
+		inactivityTimeout.current = setTimeout(() => {
+			const canvas = canvasRef.current
+			canvas.toBlob((blob) => {
+				if (blob && setSignature) {
+					setSignature(blob)
+				}
+			}, 'image/png')
+		}, 2000) // Espera 2 segundos para confirmar que el usuario ha dejado de firmar
 	}
 
 	const clearSignature = () => {
 		const canvas = canvasRef.current
 		const context = canvas.getContext('2d')
-		context.clearRect(0, 0, canvas.width, canvas.height) // Limpia el canvas
-		context.fillStyle = 'white' // Restaura el fondo
+		context.clearRect(0, 0, canvas.width, canvas.height)
+		context.fillStyle = 'white'
 		context.fillRect(0, 0, canvas.width, canvas.height)
+		clearTimeout(inactivityTimeout.current) // Limpiar el temporizador al limpiar el canvas
 	}
-
-	useEffect(() => {
-		if (reset) clearSignature()
-		setTimeout(() => setReset(false), 2000)
-	}, [reset])
 
 	return (
 		<div>
 			<canvas
 				ref={canvasRef}
 				width={500}
-				height={300} // Aumentar el tamaño del área de firma
+				height={300}
 				className="rounded-lg border border-gray-300"
 				onMouseDown={startDrawing}
 				onMouseMove={draw}
