@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import html2canvas from 'html2canvas' // Importar html2canvas
-import LoadingModal from './LoadingModal'
 import TribecaContent from './TribecaContent'
 import SignatureContent from './SignatureContent'
 import InputsContent from './InputsContent'
+import LoadingModalSecondary from './LoadingModalSecondary'
 
 const Form40 = () => {
 	const [signature, setSignature] = useState(null)
@@ -18,6 +18,7 @@ const Form40 = () => {
 	})
 	const [message, setMessage] = useState(null)
 	const [prospectBookingId, setProspectBookingId] = useState(null)
+	const [resetSignature, setResetSignature] = useState(false)
 
 	useEffect(() => {
 		// Obtener la URL actual
@@ -38,7 +39,8 @@ const Form40 = () => {
 			signed_contract_file: null,
 			action_auto_branch_id: 40
 		})
-		window.location.reload()
+		setResetSignature(true)
+		setMessage(null)
 	}
 
 	const validateForm = () => {
@@ -121,7 +123,10 @@ const Form40 = () => {
 				)
 
 				if (response.ok) {
-					window.location.href = 'https://www.actionblack.us/memberships'
+					setMessage({
+						text: 'Thank you for signing up',
+						type: 'success'
+					})
 				} else {
 					const errorResponse = await response.json()
 					setMessage({
@@ -186,10 +191,14 @@ const Form40 = () => {
 				<div className={`w-fill mx-auto flex flex-col bg-white p-6 px-10 text-base`}>
 					<TribecaContent />
 					<InputsContent formData={formData} handleChange={handleChange} />
-					<SignatureContent setSignature={setSignature} />
+					<SignatureContent
+						resetSignature={resetSignature}
+						setSignature={setSignature}
+						setResetSignature={setResetSignature}
+					/>
 
 					{isSubmitting && (
-						<LoadingModal
+						<LoadingModalSecondary
 							resetForm={resetForm}
 							handleSubmit={handleSubmit}
 							onClose={() => setIsSubmitting(false)}
@@ -202,7 +211,7 @@ const Form40 = () => {
 			<div className="flex w-full justify-end px-10 py-2">
 				<button
 					disabled={validateForm() ? false : true}
-					onClick={handleSubmit}
+					onClick={() => setIsSubmitting(true)}
 					className="mt-4 w-1/3 rounded-lg bg-indigo-600 p-2 text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:bg-indigo-300"
 				>
 					Submit

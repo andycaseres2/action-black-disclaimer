@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react'
 import Trash from '../Icons/Trash'
 
-const SignaturePad = ({ setSignature }) => {
+const SignaturePad = ({ setSignature, resetSignature, setResetSignature }) => {
 	const canvasRef = useRef(null)
 	const [isDrawing, setIsDrawing] = useState(false)
 	const [lastX, setLastX] = useState(0)
@@ -88,6 +88,15 @@ const SignaturePad = ({ setSignature }) => {
 		context.fillRect(0, 0, canvas.width, canvas.height)
 		clearTimeout(inactivityTimeout.current)
 	}
+
+	useEffect(() => {
+		if (resetSignature) {
+			clearSignature()
+			setTimeout(() => {
+				setResetSignature(false)
+			}, 3000)
+		}
+	}, [resetSignature])
 
 	return (
 		<div>
