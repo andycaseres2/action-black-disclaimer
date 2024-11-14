@@ -1,6 +1,6 @@
 import SignaturePad from './SignaturePad'
 
-const SignatureContent = ({ setSignature }) => {
+const SignatureContent = ({ resetSignature, setSignature, setResetSignature }) => {
 	return (
 		<div className="flex w-full flex-col gap-2 py-2">
 			{/* Signature */}
@@ -9,7 +9,11 @@ const SignatureContent = ({ setSignature }) => {
 					By affixing my signature hereto, I attest that I have thoroughly reviewed and
 					comprehended:
 				</label>
-				<SignaturePad setSignature={setSignature} />
+				<SignaturePad
+					resetSignature={resetSignature}
+					setSignature={setSignature}
+					setResetSignature={setResetSignature}
+				/>
 			</div>
 		</div>
 	)
